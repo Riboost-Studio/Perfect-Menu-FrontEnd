@@ -5,51 +5,5 @@
         "designId": "26167593-e675-4845-b9ce-88b7de2ddb01",
         "pluginId": "2bd1c688-31c5-443e-ae25-59aa5b6431fb",
         "publicData": {}
-    },
-    "f9ef41c3-1c53-4857-855b-f2f6a40b7186": {
-        "id": "d4fefadf-5dd2-4b88-8788-617902306b1b",
-        "name": "Supabase",
-        "designId": "26167593-e675-4845-b9ce-88b7de2ddb01",
-        "pluginId": "f9ef41c3-1c53-4857-855b-f2f6a40b7186",
-        "publicData": {
-            "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wcGFheGxxY25ta3BwaHRuanF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDU3MjgsImV4cCI6MjA4Nzc4MTcyOH0.aGApH265xQolgI3kcJJYJzh8C9bcV7KhO9bUx6igjNg",
-            "projectUrl": "https://oppaaxlqcnmkpphtnjqx.supabase.co",
-            "customDomain": "",
-            "environments": {
-                "production": {
-                    "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wcGFheGxxY25ta3BwaHRuanF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDU3MjgsImV4cCI6MjA4Nzc4MTcyOH0.aGApH265xQolgI3kcJJYJzh8C9bcV7KhO9bUx6igjNg",
-                    "branch": null,
-                    "branchSlug": null,
-                    "projectUrl": "https://oppaaxlqcnmkpphtnjqx.supabase.co",
-                    "customDomain": "",
-                    "baseProjectRef": "oppaaxlqcnmkpphtnjqx"
-                }
-            },
-            "realtimeTables": {
-                "carts": true,
-                "cart_items": true
-            }
-        }
-    },
-    "1fa0dd68-5069-436c-9a7d-3b54c340f1fa": {
-        "id": "8df22e67-0bf6-484d-9ced-4ba9d83420a1",
-        "name": "Supabase Auth",
-        "designId": "26167593-e675-4845-b9ce-88b7de2ddb01",
-        "pluginId": "1fa0dd68-5069-436c-9a7d-3b54c340f1fa",
-        "publicData": {
-            "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wcGFheGxxY25ta3BwaHRuanF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDU3MjgsImV4cCI6MjA4Nzc4MTcyOH0.aGApH265xQolgI3kcJJYJzh8C9bcV7KhO9bUx6igjNg",
-            "projectUrl": "https://oppaaxlqcnmkpphtnjqx.supabase.co",
-            "customDomain": "",
-            "environments": {
-                "production": {
-                    "apiKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wcGFheGxxY25ta3BwaHRuanF4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyMDU3MjgsImV4cCI6MjA4Nzc4MTcyOH0.aGApH265xQolgI3kcJJYJzh8C9bcV7KhO9bUx6igjNg",
-                    "branch": null,
-                    "branchSlug": null,
-                    "projectUrl": "https://oppaaxlqcnmkpphtnjqx.supabase.co",
-                    "customDomain": "",
-                    "baseProjectRef": "oppaaxlqcnmkpphtnjqx"
-                }
-            }
-        }
     }
 }
