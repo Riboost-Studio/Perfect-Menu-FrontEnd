@@ -2,7 +2,15 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 import wwPage from './views/wwPage.vue';
 
-import { initializeData, initializePlugins, onPageUnload } from '@/_common/helpers/data';
+import {
+    initializeData,
+    initializePlugins,
+    initializeIntegrationInstances,
+    onPageUnload,
+} from '@/_common/helpers/data';
+import { convertPathToRouterFormat } from '@/_common/helpers/urlParametersParsing';
+import { getRuntimeEnvironment } from '@/helpers/frontEnv.js';
+import { useBackAuthStore } from '@/pinia/backAuth.js';
 
 let router;
 const routes = [];
@@ -23,10 +31,10 @@ function scrollBehavior(to) {
 import pluginsSettings from '../../plugins-settings.json';
 
 // eslint-disable-next-line no-undef
-window.wwg_designInfo = {"id":"26167593-e675-4845-b9ce-88b7de2ddb01","homePageId":"dea71057-c765-4a1a-a37b-adff5306c3cf","authPluginId":null,"baseTag":null,"defaultTheme":"light","langs":[{"lang":"en","default":false,"isDefaultPath":false},{"lang":"it","default":true}],"background":{},"workflows":[],"pages":[{"id":"4b4a92aa-e3f4-4e71-b229-2707b193b86b","linkId":"4b4a92aa-e3f4-4e71-b229-2707b193b86b","name":"single-menu","folder":null,"paths":{"it":"single-menu/{{menuId|}}","default":"single-menu/{{menuId|}}"},"langs":["en","it"],"cmsDataSetPath":null,"sections":[{"uid":"80f97582-b93e-46f2-b4c2-af86e6be7642","sectionTitle":"Top Nav","linkId":"9fcd5519-de3f-4883-bfac-4305aebc1c27"},{"uid":"3cf7a289-d60c-45b2-831e-0af5a819b7c9","sectionTitle":"Section","linkId":"a4c119c8-6c7e-43a2-8333-06af7573a7a2"}],"pageUserGroups":[],"title":{},"meta":{"desc":{},"keywords":{},"socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":""},{"id":"dea71057-c765-4a1a-a37b-adff5306c3cf","linkId":"dea71057-c765-4a1a-a37b-adff5306c3cf","name":"Menu","folder":null,"paths":{"en":"home","default":"home"},"langs":["en","it"],"cmsDataSetPath":null,"sections":[{"uid":"2e5716b0-34dd-4126-bb3b-d64db0b71dbf","sectionTitle":"Header","linkId":"babf1cf7-e223-41b6-a450-9cb988ebe184"},{"uid":"1d2b1564-ec04-48d7-a565-194ebef845ec","sectionTitle":"Sezione - pre-menu","linkId":"e93f9ccb-cda5-4ca0-9555-93eb13031895"},{"uid":"5d963e84-01af-49c3-80c0-c82976aa380f","sectionTitle":"Loader-Alert tenant NON RISOLTO","linkId":"bafff32d-6f10-4a1c-b47f-73a3eb88ca3d"}],"pageUserGroups":[],"title":{"en":"","fr":"Vide | Commencer à partir de zéro","it":"Il nostro menu | Perfect Menu"},"meta":{"desc":{"it":""},"keywords":{},"socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":""}],"plugins":[{"id":"2bd1c688-31c5-443e-ae25-59aa5b6431fb","name":"REST API","namespace":"restApi"}]};
+window.wwg_designInfo = {"id":"26167593-e675-4845-b9ce-88b7de2ddb01","homePageId":"dea71057-c765-4a1a-a37b-adff5306c3cf","authPluginId":null,"baseTag":null,"defaultTheme":"light","langs":[{"lang":"en","default":false,"isDefaultPath":false},{"lang":"it","default":true}],"background":{},"workflows":[],"back":{"isServerSetup":{"staging":false,"production":false}},"auth":null,"pages":[{"id":"4b4a92aa-e3f4-4e71-b229-2707b193b86b","linkId":"4b4a92aa-e3f4-4e71-b229-2707b193b86b","name":"single-menu","folder":null,"paths":{"it":"single-menu/{{menuId|}}","default":"single-menu/{{menuId|}}"},"langs":["en","it"],"cmsDataSetPath":null,"sections":[{"uid":"80f97582-b93e-46f2-b4c2-af86e6be7642","sectionTitle":"Top Nav","linkId":"9fcd5519-de3f-4883-bfac-4305aebc1c27"},{"uid":"3cf7a289-d60c-45b2-831e-0af5a819b7c9","sectionTitle":"Section","linkId":"a4c119c8-6c7e-43a2-8333-06af7573a7a2"}],"pageUserGroups":[],"title":{},"meta":{"desc":{},"keywords":{},"socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":"","security":{}},{"id":"dea71057-c765-4a1a-a37b-adff5306c3cf","linkId":"dea71057-c765-4a1a-a37b-adff5306c3cf","name":"Menu","folder":null,"paths":{"en":"home","default":"home"},"langs":["en","it"],"cmsDataSetPath":null,"sections":[{"uid":"2e5716b0-34dd-4126-bb3b-d64db0b71dbf","sectionTitle":"Header","linkId":"babf1cf7-e223-41b6-a450-9cb988ebe184"},{"uid":"1d2b1564-ec04-48d7-a565-194ebef845ec","sectionTitle":"Sezione - pre-menu","linkId":"e93f9ccb-cda5-4ca0-9555-93eb13031895"},{"uid":"5d963e84-01af-49c3-80c0-c82976aa380f","sectionTitle":"Loader-Alert tenant NON RISOLTO","linkId":"bafff32d-6f10-4a1c-b47f-73a3eb88ca3d"}],"pageUserGroups":[],"title":{"en":"","fr":"Vide | Commencer à partir de zéro","it":"Il nostro menu | Perfect Menu"},"meta":{"desc":{"it":""},"keywords":{},"socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":"","security":{}}],"plugins":[{"id":"2bd1c688-31c5-443e-ae25-59aa5b6431fb","name":"REST API","namespace":"restApi"}]};
 // eslint-disable-next-line no-undef
-window.wwg_cacheVersion = 31;
-// eslint-disable-next-line no-undef
+window.wwg_cacheVersion = 32;
+
 window.wwg_pluginsSettings = pluginsSettings;
 // eslint-disable-next-line no-undef
 window.wwg_disableManifest = false;
@@ -39,8 +47,7 @@ const registerRoute = (page, lang, forcedPath) => {
         forcedPath ||
         (page.id === window.wwg_designInfo.homePageId ? '/' : `/${page.paths[lang.lang] || page.paths.default}`);
 
-    //Replace params
-    path = path.replace(/{{([\w]+)\|([^/]+)?}}/g, ':$1');
+    path = convertPathToRouterFormat(path);
 
     routes.push({
         path: langSlug + path,
@@ -60,34 +67,61 @@ const registerRoute = (page, lang, forcedPath) => {
             //Init plugins
             await initializePlugins();
 
-            //Check if private page
-            if (page.pageUserGroups?.length) {
-                // cancel navigation if no plugin
-                if (!wwLib.wwAuth.plugin) {
-                    return false;
+            //Init integration instances
+            await initializeIntegrationInstances();
+
+            if (wwLib.wwAuth.plugin) {
+                if (page.pageUserGroups?.length) {
+                    await wwLib.wwAuth.init();
+
+                    // Redirect to not sign in page if not logged
+                    if (!wwLib.wwAuth.getIsAuthenticated()) {
+                        window.location.href = `${wwLib.wwPageHelper.getPagePath(
+                            wwLib.wwAuth.getUnauthenticatedPageId()
+                        )}?_source=${to.path}`;
+
+                        return null;
+                    }
+
+                    //Check roles are required
+                    if (
+                        page.pageUserGroups.length > 1 &&
+                        !wwLib.wwAuth.matchUserGroups(page.pageUserGroups.map(({ userGroup }) => userGroup))
+                    ) {
+                        window.location.href = `${wwLib.wwPageHelper.getPagePath(
+                            wwLib.wwAuth.getUnauthorizedPageId()
+                        )}?_source=${to.path}`;
+
+                        return null;
+                    }
                 }
-
-                await wwLib.wwAuth.init();
-
-                // Redirect to not sign in page if not logged
-                if (!wwLib.wwAuth.getIsAuthenticated()) {
-                    window.location.href = `${wwLib.wwPageHelper.getPagePath(
-                        wwLib.wwAuth.getUnauthenticatedPageId()
-                    )}?_source=${to.path}`;
-
-                    return null;
+            } else {
+                const backAuthStore = useBackAuthStore(wwLib.$pinia);
+                if (!backAuthStore.projectAuth && window.wwg_designInfo.auth) {
+                    backAuthStore.setProjectAuth(window.wwg_designInfo.auth);
                 }
+                await backAuthStore.refresh();
+                const projectAuth = backAuthStore.projectAuth || {};
 
-                //Check roles are required
-                if (
-                    page.pageUserGroups.length > 1 &&
-                    !wwLib.wwAuth.matchUserGroups(page.pageUserGroups.map(({ userGroup }) => userGroup))
-                ) {
-                    window.location.href = `${wwLib.wwPageHelper.getPagePath(
-                        wwLib.wwAuth.getUnauthorizedPageId()
-                    )}?_source=${to.path}`;
-
-                    return null;
+                //Check if private page
+                if (page.security?.accessRule === 'authenticated') {
+                    if (!backAuthStore.isAuthenticated) {
+                        window.location.href = `${wwLib.wwPageHelper.getPagePath(
+                            projectAuth.unauthenticatedPageId
+                        )}?_source=${to.path}`;
+                        return null;
+                    } else if (page.security?.accessRoles?.length) {
+                        const hasAccess =
+                            page.security.accessRolesCondition === 'AND'
+                                ? backAuthStore.matchAllRoles(page.security.accessRoles)
+                                : backAuthStore.matchAnyRoles(page.security.accessRoles);
+                        if (!hasAccess) {
+                            window.location.href = `${wwLib.wwPageHelper.getPagePath(
+                                projectAuth.unauthorizedPageId
+                            )}?_source=${to.path}`;
+                            return null;
+                        }
+                    }
                 }
             }
 
@@ -152,11 +186,7 @@ if (page404) {
 
 let routerOptions = {};
 
-const isProd =
-    !window.location.host.includes(
-        // TODO: add staging2 ?
-        '-staging.' + (process.env.WW_ENV === 'staging' ? import.meta.env.VITE_APP_PREVIEW_URL : '')
-    ) && !window.location.host.includes(import.meta.env.VITE_APP_PREVIEW_URL);
+const isProd = getRuntimeEnvironment() === 'production';
 
 if (isProd && window.wwg_designInfo.baseTag?.href) {
     let baseTag = window.wwg_designInfo.baseTag.href;
