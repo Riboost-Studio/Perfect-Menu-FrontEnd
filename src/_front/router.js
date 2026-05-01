@@ -12,10 +12,52 @@ import { convertPathToRouterFormat } from '@/_common/helpers/urlParametersParsin
 import { getRuntimeEnvironment } from '@/helpers/frontEnv.js';
 import { useBackAuthStore } from '@/pinia/backAuth.js';
 
+/**
+ * @typedef {import('vue-router').Router} Router
+ * @typedef {import('vue-router').RouteRecordRaw} RouteRecordRaw
+ * @typedef {import('vue-router').RouterOptions} RouterOptions
+ * @typedef {import('vue-router').RouterScrollBehavior} RouterScrollBehavior
+ */
+
+/**
+ * @typedef {Object} Lang
+ * @property {string} lang
+ * @property {boolean} [default]
+ * @property {boolean} [isDefaultPath]
+ */
+
+/**
+ * @typedef {Object} PageSecurity
+ * @property {'authenticated' | string} [accessRule]
+ * @property {string[]} [accessRoles]
+ * @property {'AND' | 'OR'} [accessRolesCondition]
+ */
+
+/**
+ * @typedef {Object} Page
+ * @property {string} id
+ * @property {Record<string, string> & { default: string }} paths
+ * @property {string[]} langs
+ * @property {PageSecurity} [security]
+ * @property {{ userGroup: string }[]} [pageUserGroups]
+ */
+
+/**
+ * @typedef {Object} DesignInfo
+ * @property {string} homePageId
+ * @property {Page[]} pages
+ * @property {Lang[]} langs
+ * @property {unknown} [auth]
+ * @property {{ href?: string }} [baseTag]
+ */
+
+/** @type {Router} */
 let router;
+/** @type {RouteRecordRaw[]} */
 const routes = [];
 
-function scrollBehavior(to) {
+/** @type {RouterScrollBehavior} */
+const scrollBehavior = to => {
     if (to.hash) {
         return {
             el: to.hash,
@@ -24,23 +66,28 @@ function scrollBehavior(to) {
     } else {
         return { top: 0 };
     }
-}
+};
 
  
 /* wwFront:start */
 import pluginsSettings from '../../plugins-settings.json';
 
-// eslint-disable-next-line no-undef
 window.wwg_designInfo = {"id":"26167593-e675-4845-b9ce-88b7de2ddb01","homePageId":"dea71057-c765-4a1a-a37b-adff5306c3cf","authPluginId":null,"baseTag":null,"defaultTheme":"light","langs":[{"lang":"en","default":false,"isDefaultPath":false},{"lang":"it","default":true}],"background":{},"workflows":[],"back":{"isServerSetup":{"staging":false,"production":false}},"auth":null,"pages":[{"id":"4b4a92aa-e3f4-4e71-b229-2707b193b86b","linkId":"4b4a92aa-e3f4-4e71-b229-2707b193b86b","name":"single-menu","folder":null,"paths":{"it":"single-menu/{{menuId|}}","default":"single-menu/{{menuId|}}"},"langs":["en","it"],"cmsDataSetPath":null,"sections":[{"uid":"80f97582-b93e-46f2-b4c2-af86e6be7642","sectionTitle":"Top Nav","linkId":"9fcd5519-de3f-4883-bfac-4305aebc1c27"},{"uid":"3cf7a289-d60c-45b2-831e-0af5a819b7c9","sectionTitle":"Section","linkId":"a4c119c8-6c7e-43a2-8333-06af7573a7a2"}],"pageUserGroups":[],"title":{},"meta":{"desc":{},"keywords":{},"socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":"","security":{}},{"id":"dea71057-c765-4a1a-a37b-adff5306c3cf","linkId":"dea71057-c765-4a1a-a37b-adff5306c3cf","name":"Menu","folder":null,"paths":{"en":"home","default":"home"},"langs":["en","it"],"cmsDataSetPath":null,"sections":[{"uid":"2e5716b0-34dd-4126-bb3b-d64db0b71dbf","sectionTitle":"Header","linkId":"babf1cf7-e223-41b6-a450-9cb988ebe184"},{"uid":"1d2b1564-ec04-48d7-a565-194ebef845ec","sectionTitle":"Sezione - pre-menu","linkId":"e93f9ccb-cda5-4ca0-9555-93eb13031895"},{"uid":"5d963e84-01af-49c3-80c0-c82976aa380f","sectionTitle":"Loader-Alert tenant NON RISOLTO","linkId":"bafff32d-6f10-4a1c-b47f-73a3eb88ca3d"}],"pageUserGroups":[],"title":{"en":"","fr":"Vide | Commencer à partir de zéro","it":"Il nostro menu | Perfect Menu"},"meta":{"desc":{"it":""},"keywords":{},"socialDesc":{},"socialTitle":{},"structuredData":{}},"metaImage":"","security":{}}],"plugins":[{"id":"2bd1c688-31c5-443e-ae25-59aa5b6431fb","name":"REST API","namespace":"restApi"}]};
-// eslint-disable-next-line no-undef
-window.wwg_cacheVersion = 33;
-
+window.wwg_cacheVersion = 34;
 window.wwg_pluginsSettings = pluginsSettings;
-// eslint-disable-next-line no-undef
 window.wwg_disableManifest = false;
 
-const defaultLang = window.wwg_designInfo.langs.find(({ default: isDefault }) => isDefault) || {};
+/** @type {Lang} */
+const defaultLang = window.wwg_designInfo.langs.find(({ default: isDefault }) => isDefault) || {
+    lang: 'en',
+    default: true,
+};
 
+/**
+ * @param {Page} page
+ * @param {Lang} lang
+ * @param {string} [forcedPath]
+ */
 const registerRoute = (page, lang, forcedPath) => {
     const langSlug = !lang.default || lang.isDefaultPath ? `/${lang.lang}` : '';
     let path =
@@ -64,13 +111,45 @@ const registerRoute = (page, lang, forcedPath) => {
             wwLib.wwLang.defaultLang = defaultLang.lang;
             wwLib.$store.dispatch('front/setLang', lang.lang);
 
+            const backAuthStore = useBackAuthStore(wwLib.$pinia);
+            if (!wwLib.wwAuth.plugin) {
+                if (!backAuthStore.projectAuth && window.wwg_designInfo.auth) {
+                    backAuthStore.setProjectAuth(window.wwg_designInfo.auth);
+                }
+            }
+
             //Init plugins
             await initializePlugins();
 
             //Init integration instances
             await initializeIntegrationInstances();
 
-            if (wwLib.wwAuth.plugin) {
+            if (!wwLib.wwAuth.plugin) {
+                await backAuthStore.refresh();
+                const projectAuth = backAuthStore.projectAuth || {};
+
+                //Check if private page
+                if (page.security?.accessRule === 'authenticated') {
+                    if (!backAuthStore.isAuthenticated) {
+                        window.location.href = `${wwLib.wwPageHelper.getPagePath(
+                            projectAuth.unauthenticatedPageId
+                        )}?_source=${to.path}`;
+                        return null;
+                    } else if (page.security?.accessRoles?.length) {
+                        const hasAccess =
+                            page.security.accessRolesCondition === 'AND'
+                                ? backAuthStore.matchAllRoles(page.security.accessRoles)
+                                : backAuthStore.matchAnyRoles(page.security.accessRoles);
+                        if (!hasAccess) {
+                            window.location.href = `${wwLib.wwPageHelper.getPagePath(
+                                projectAuth.unauthorizedPageId
+                            )}?_source=${to.path}`;
+                            return null;
+                        }
+                    }
+                }
+            } else {
+                // Deprecated legacy auth plugins, to remove in the future
                 if (page.pageUserGroups?.length) {
                     await wwLib.wwAuth.init();
 
@@ -93,34 +172,6 @@ const registerRoute = (page, lang, forcedPath) => {
                         )}?_source=${to.path}`;
 
                         return null;
-                    }
-                }
-            } else {
-                const backAuthStore = useBackAuthStore(wwLib.$pinia);
-                if (!backAuthStore.projectAuth && window.wwg_designInfo.auth) {
-                    backAuthStore.setProjectAuth(window.wwg_designInfo.auth);
-                }
-                await backAuthStore.refresh();
-                const projectAuth = backAuthStore.projectAuth || {};
-
-                //Check if private page
-                if (page.security?.accessRule === 'authenticated') {
-                    if (!backAuthStore.isAuthenticated) {
-                        window.location.href = `${wwLib.wwPageHelper.getPagePath(
-                            projectAuth.unauthenticatedPageId
-                        )}?_source=${to.path}`;
-                        return null;
-                    } else if (page.security?.accessRoles?.length) {
-                        const hasAccess =
-                            page.security.accessRolesCondition === 'AND'
-                                ? backAuthStore.matchAllRoles(page.security.accessRoles)
-                                : backAuthStore.matchAnyRoles(page.security.accessRoles);
-                        if (!hasAccess) {
-                            window.location.href = `${wwLib.wwPageHelper.getPagePath(
-                                projectAuth.unauthorizedPageId
-                            )}?_source=${to.path}`;
-                            return null;
-                        }
                     }
                 }
             }
@@ -178,13 +229,15 @@ if (page404) {
 } else {
     routes.push({
         path: '/:pathMatch(.*)*',
+        redirect: null,
         async beforeEnter() {
             window.location.href = '/404';
         },
     });
 }
 
-let routerOptions = {};
+/** @type {RouterOptions} */
+let routerOptions;
 
 const isProd = getRuntimeEnvironment() === 'production';
 
@@ -198,7 +251,6 @@ if (isProd && window.wwg_designInfo.baseTag?.href) {
     }
 
     routerOptions = {
-        base: baseTag,
         history: createWebHistory(baseTag),
         routes,
     };
